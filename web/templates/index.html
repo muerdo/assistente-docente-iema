@@ -1,0 +1,1697 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ecossistema Docente — {{ perfil.instituicao.nome }}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+  <script>
+    (function() {
+      const saved = localStorage.getItem('ecossistema_theme') || 'dark';
+      const resolved = saved === 'system'
+        ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+        : saved;
+      document.documentElement.setAttribute('data-theme', resolved);
+      document.documentElement.setAttribute('data-bs-theme', resolved);
+    })();
+  </script>
+  <style>
+    :root, [data-theme="light"] {
+      --bg-app: #f6f8fa;
+      --bg-sidebar: #ffffff;
+      --bg-surface: #ffffff;
+      --bg-elevated: #f1f5f9;
+      --bg-glass: rgba(255, 255, 255, 0.88);
+      --text-primary: #0f172a;
+      --text-secondary: #334155;
+      --text-muted: #64748b;
+      --border-subtle: #e2e8f0;
+      --border-focus: #2563eb;
+      --accent-primary: #2563eb;
+      --accent-primary-hover: #1d4ed8;
+      --accent-soft: rgba(37, 99, 235, 0.08);
+      --emerald-soft: rgba(16, 185, 129, 0.12);
+      --amber-soft: rgba(245, 158, 11, 0.14);
+      --rose-soft: rgba(244, 63, 94, 0.12);
+      --shadow-card: 0 1px 3px rgba(15, 23, 42, 0.04), 0 4px 12px -2px rgba(15, 23, 42, 0.03);
+      --terminal-bg: #0f172a;
+      --terminal-fg: #f1f5f9;
+    }
+
+    [data-theme="dark"] {
+      --bg-app: #090d16;
+      --bg-sidebar: #0d121f;
+      --bg-surface: #111827;
+      --bg-elevated: #162032;
+      --bg-glass: rgba(13, 18, 31, 0.85);
+      --text-primary: #f8fafc;
+      --text-secondary: #cbd5e1;
+      --text-muted: #94a3b8;
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --border-focus: #3b82f6;
+      --accent-primary: #3b82f6;
+      --accent-primary-hover: #60a5fa;
+      --accent-soft: rgba(59, 130, 246, 0.14);
+      --emerald-soft: rgba(16, 185, 129, 0.16);
+      --amber-soft: rgba(245, 158, 11, 0.16);
+      --rose-soft: rgba(244, 63, 94, 0.16);
+      --shadow-card: 0 4px 18px -2px rgba(0, 0, 0, 0.4);
+      --terminal-bg: #070b14;
+      --terminal-fg: #f1f5f9;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      background-color: var(--bg-app);
+      color: var(--text-primary);
+      font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      margin: 0;
+      min-height: 100vh;
+      transition: background-color 0.2s ease, color 0.2s ease;
+    }
+    code, pre, .font-mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* Layout Shell */
+    .app-shell {
+      display: grid;
+      grid-template-columns: 272px 1fr;
+      min-height: 100vh;
+    }
+    @media (max-width: 991.98px) {
+      .app-shell { grid-template-columns: 1fr; }
+      .app-sidebar {
+        position: fixed;
+        z-index: 1045;
+        inset: 0 auto 0 0;
+        width: 272px;
+        transform: translateX(-100%);
+        transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+      .app-sidebar.open { transform: translateX(0); }
+    }
+
+    /* Sidebar */
+    .app-sidebar {
+      background: var(--bg-sidebar);
+      border-right: 1px solid var(--border-subtle);
+      display: flex;
+      flex-direction: column;
+      padding: 1.25rem 1rem;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+    }
+    .brand-mark {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.35rem 0.5rem 1.15rem;
+      border-bottom: 1px solid var(--border-subtle);
+      margin-bottom: 1rem;
+    }
+    .brand-icon {
+      width: 38px;
+      height: 38px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #4f46e5, #06b6d4);
+      display: grid;
+      place-items: center;
+      color: #fff;
+      font-size: 1.15rem;
+      box-shadow: 0 4px 12px rgba(79, 70, 229, 0.35);
+    }
+    .docente-active-card {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-subtle);
+      border-radius: 12px;
+      padding: 0.85rem;
+      margin-bottom: 1.15rem;
+    }
+    .nav-section-label {
+      font-size: 0.68rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-muted);
+      padding: 0.4rem 0.75rem;
+    }
+    .sidebar-nav {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+    .sidebar-link {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      padding: 0.65rem 0.85rem;
+      border-radius: 10px;
+      color: var(--text-secondary);
+      font-weight: 600;
+      font-size: 0.88rem;
+      border: 1px solid transparent;
+      background: transparent;
+      text-align: left;
+      width: 100%;
+      transition: all 0.15s ease;
+    }
+    .sidebar-link:hover {
+      background: var(--bg-elevated);
+      color: var(--text-primary);
+    }
+    .sidebar-link.active {
+      background: var(--accent-soft);
+      color: var(--accent-primary-hover);
+      border-color: rgba(99, 102, 241, 0.25);
+    }
+    .sidebar-link i { font-size: 1.05rem; }
+
+    /* Topbar */
+    .app-topbar {
+      position: sticky;
+      top: 0;
+      z-index: 1020;
+      background: var(--bg-glass);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border-bottom: 1px solid var(--border-subtle);
+      padding: 0.85rem 1.75rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    /* Theme Switcher Pill */
+    .theme-switcher {
+      display: inline-flex;
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-subtle);
+      border-radius: 999px;
+      padding: 3px;
+      gap: 2px;
+    }
+    .theme-btn {
+      border: none;
+      background: transparent;
+      color: var(--text-muted);
+      font-size: 0.76rem;
+      font-weight: 600;
+      padding: 0.3rem 0.65rem;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      transition: all 0.15s ease;
+    }
+    .theme-btn.active {
+      background: var(--bg-surface);
+      color: var(--text-primary);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+    }
+
+    /* Bento Cards & Surfaces */
+    .surface-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 16px;
+      box-shadow: var(--shadow-card);
+      overflow: hidden;
+    }
+    .surface-header {
+      padding: 1rem 1.35rem;
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      font-weight: 700;
+      font-size: 0.95rem;
+    }
+    .kpi-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 16px;
+      padding: 1.15rem 1.25rem;
+      box-shadow: var(--shadow-card);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: transform 0.15s ease, border-color 0.15s ease;
+    }
+    .kpi-card:hover {
+      transform: translateY(-2px);
+      border-color: var(--border-focus);
+    }
+    .kpi-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      font-size: 1.25rem;
+    }
+
+    /* Status Dots */
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      padding: 0.28rem 0.7rem;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      border: 1px solid var(--border-subtle);
+      background: var(--bg-elevated);
+    }
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+    .dot-online {
+      background: #10b981;
+      box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+    }
+    .dot-offline { background: #ef4444; }
+    .dot-warn { background: #f59e0b; }
+
+    /* Custom Form & Buttons */
+    .form-control, .form-select {
+      background-color: var(--bg-elevated);
+      border-color: var(--border-subtle);
+      color: var(--text-primary);
+      border-radius: 10px;
+      padding: 0.58rem 0.85rem;
+      font-size: 0.9rem;
+    }
+    .form-control:focus, .form-select:focus {
+      background-color: var(--bg-surface);
+      border-color: var(--border-focus);
+      box-shadow: 0 0 0 3px var(--accent-soft);
+      color: var(--text-primary);
+    }
+    .btn-accent {
+      background: var(--accent-primary);
+      color: #fff;
+      border: none;
+      border-radius: 10px;
+      font-weight: 600;
+      padding: 0.6rem 1.1rem;
+      transition: all 0.15s ease;
+    }
+    .btn-accent:hover {
+      background: var(--accent-primary-hover);
+      color: #fff;
+      transform: translateY(-1px);
+    }
+
+    .terminal-box {
+      background: var(--terminal-bg);
+      color: var(--terminal-fg);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 1rem;
+      font-size: 0.82rem;
+      line-height: 1.55;
+      white-space: pre-wrap;
+      overflow-y: auto;
+    }
+
+    .table {
+      --bs-table-bg: transparent;
+      --bs-table-color: var(--text-primary);
+      --bs-table-border-color: var(--border-subtle);
+    }
+    .chip-cmd {
+      border: 1px solid var(--border-subtle);
+      background: var(--bg-elevated);
+      color: var(--text-secondary);
+      border-radius: 999px;
+      padding: 0.25rem 0.7rem;
+      font-size: 0.76rem;
+      font-family: 'JetBrains Mono', monospace;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .chip-cmd:hover {
+      border-color: var(--border-focus);
+      color: var(--text-primary);
+      background: var(--accent-soft);
+    }
+  </style>
+</head>
+<body>
+
+<div class="app-shell">
+  <!-- SIDEBAR LATERAL -->
+  <aside class="app-sidebar" id="appSidebar">
+    <div class="brand-mark">
+      <div class="brand-icon"><i class="bi bi-layers-half"></i></div>
+      <div>
+        <div class="fw-bold lh-sm" style="font-size: 0.96rem;">IEMA Studio</div>
+        <div class="text-muted" style="font-size: 0.74rem;">Ecossistema Multi-Docente</div>
+      </div>
+    </div>
+
+    <!-- Card do Docente Selecionado -->
+    <div class="docente-active-card">
+      <div class="d-flex justify-content-between align-items-start mb-1">
+        <span class="badge rounded-pill" style="background: var(--accent-soft); color: var(--accent-primary-hover); font-size: 0.68rem;">
+          {% if docente_atual == 'pedro' %}ADMIN COMPLETO{% else %}MODO ESSENCIAL + RAG{% endif %}
+        </span>
+        <span class="dot dot-online" title="Perfil Ativo"></span>
+      </div>
+      <div class="fw-bold text-truncate" style="font-size: 0.95rem;">{{ perfil.nome }}</div>
+      <div class="small text-muted text-truncate mb-2">{{ perfil.eixo_tecnologico }}</div>
+      <div class="d-flex align-items-center gap-1 small font-mono text-success" style="font-size: 0.75rem;">
+        <i class="bi bi-whatsapp"></i> {{ perfil.telefone_whatsapp or 'Sem vínculo' }}
+      </div>
+    </div>
+
+    <div class="nav-section-label">Workspace</div>
+    <nav class="sidebar-nav nav flex-column" id="portalTabs" role="tablist">
+      <button class="sidebar-link {% if not aba_ativa or aba_ativa == 'gerador' %}active{% endif %}" data-bs-toggle="tab" data-bs-target="#tabGerador" type="button">
+        <span><i class="bi bi-stars me-2"></i>Estúdio de Aulas IA</span>
+        <span class="badge rounded-pill text-bg-secondary" style="font-size: 0.68rem;">RAG</span>
+      </button>
+
+      <button class="sidebar-link {% if aba_ativa == 'lab' %}active{% endif %}" data-bs-toggle="tab" data-bs-target="#tabLaboratorio" type="button">
+        <span><i class="bi bi-pc-display-horizontal me-2"></i>Laboratório & Grade</span>
+        {% if reservas_pendentes|length > 0 %}
+          <span class="badge rounded-pill bg-warning text-dark">{{ reservas_pendentes|length }}</span>
+        {% else %}
+          <span class="badge rounded-pill bg-secondary bg-opacity-25 text-reset">{{ reservas_confirmadas|length }}</span>
+        {% endif %}
+      </button>
+
+      <button class="sidebar-link {% if aba_ativa == 'bot' %}active{% endif %}" data-bs-toggle="tab" data-bs-target="#tabControleBot" type="button">
+        <span><i class="bi bi-terminal-plus me-2"></i>Bots, Privado & Logs</span>
+        <span class="dot {% if status_servicos.webhook_5000 %}dot-online{% else %}dot-offline{% endif %}"></span>
+      </button>
+
+      <button class="sidebar-link {% if aba_ativa == 'materias' %}active{% endif %}" data-bs-toggle="tab" data-bs-target="#tabMaterias" type="button">
+        <span><i class="bi bi-journal-code me-2"></i>Base RAG & Ementas</span>
+        <span class="badge rounded-pill bg-secondary bg-opacity-25 text-reset">{{ materias|length }}</span>
+      </button>
+
+      <button class="sidebar-link {% if aba_ativa == 'alunos' %}active{% endif %}" data-bs-toggle="tab" data-bs-target="#tabAlunos" type="button">
+        <span><i class="bi bi-people me-2"></i>Alunos & Frequência</span>
+        <span class="badge rounded-pill bg-secondary bg-opacity-25 text-reset">{{ total_alunos }}</span>
+      </button>
+
+      <button class="sidebar-link {% if aba_ativa == 'atividades' %}active{% endif %}" data-bs-toggle="tab" data-bs-target="#tabAtividades" type="button">
+        <span><i class="bi bi-send-check me-2"></i>Atividades & Disparo</span>
+        <span class="badge rounded-pill bg-secondary bg-opacity-25 text-reset">{{ atividades|length }}</span>
+      </button>
+
+      <button class="sidebar-link {% if aba_ativa == 'arquivos' %}active{% endif %}" data-bs-toggle="tab" data-bs-target="#tabArquivos" type="button">
+        <span><i class="bi bi-folder2-open me-2"></i>Arquivos Gerados</span>
+        <span class="badge rounded-pill bg-secondary bg-opacity-25 text-reset">{{ slides_gerados|length }}</span>
+      </button>
+    </nav>
+
+    <div class="mt-auto pt-3 border-top" style="border-color: var(--border-subtle) !important;">
+      <button class="btn btn-outline-primary btn-sm w-100 fw-semibold rounded-3 py-2" data-bs-toggle="modal" data-bs-target="#modalNovoDocente">
+        <i class="bi bi-person-plus-fill me-1"></i> Novo Docente (Admin)
+      </button>
+    </div>
+  </aside>
+
+  <!-- ÁREA PRINCIPAL -->
+  <div class="d-flex flex-column min-vh-100">
+    <!-- TOPBAR -->
+    <header class="app-topbar">
+      <div class="d-flex align-items-center gap-3">
+        <button class="btn btn-sm btn-outline-secondary d-lg-none" type="button" onclick="document.getElementById('appSidebar').classList.toggle('open')">
+          <i class="bi bi-list fs-5"></i>
+        </button>
+        <div>
+          <div class="fw-bold" style="font-size: 1.02rem;">{{ perfil.instituicao.nome }}</div>
+          <div class="text-muted small d-none d-sm-block">Painel Integrado • WhatsApp OpenWA + Motor RAG Multi-Professor</div>
+        </div>
+      </div>
+
+      <div class="d-flex align-items-center gap-2 flex-wrap">
+        <!-- Pills de Status Rápido -->
+        <div class="status-pill d-none d-xl-inline-flex">
+          <span class="dot {% if status_servicos.webhook_5000 %}dot-online{% else %}dot-offline{% endif %}"></span>
+          <span>Bot 5000</span>
+        </div>
+        <div class="status-pill d-none d-md-inline-flex">
+          <span class="dot {% if status_servicos.openwa_2785 %}dot-online{% else %}dot-warn{% endif %}"></span>
+          <span>OpenWA {{ status_servicos.openwa_phone }}</span>
+        </div>
+
+        <!-- Botão de Desligar / Religar Bot Momentaneamente -->
+        {% if status_servicos.bot_pausado %}
+          <button type="button" class="btn btn-sm btn-warning text-dark fw-bold rounded-pill px-3 shadow-sm d-inline-flex align-items-center gap-1" onclick="togglePausaBot()" title="O bot está pausado e não responde a mensagens. Clique para religar.">
+            <span class="spinner-grow spinner-grow-sm text-dark" role="status" style="width: 0.65rem; height: 0.65rem;"></span>
+            <span>Bot Pausado (Religar)</span>
+          </button>
+        {% else %}
+          <button type="button" class="btn btn-sm btn-outline-secondary rounded-pill px-3 d-inline-flex align-items-center gap-1" onclick="togglePausaBot()" title="Desligar o bot momentaneamente até você decidir religar">
+            <i class="bi bi-pause-circle text-warning"></i>
+            <span class="d-none d-sm-inline">Pausar Bot</span>
+          </button>
+        {% endif %}
+
+        <!-- Seletor de Docente -->
+        <div class="dropdown">
+          <button class="btn btn-sm dropdown-toggle fw-semibold rounded-pill px-3 py-1" style="background: var(--bg-elevated); border: 1px solid var(--border-subtle); color: var(--text-primary);" type="button" data-bs-toggle="dropdown">
+            <i class="bi bi-person-workspace text-primary me-1"></i> {{ perfil.nome }}
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 rounded-4 p-2" style="min-width: 250px;">
+            <li class="px-2 py-1 small text-muted fw-bold">ALTERNAR PERFIL DOCENTE</li>
+            {% for doc in docentes %}
+              <li>
+                <a class="dropdown-item rounded-3 py-2 d-flex justify-content-between align-items-center {% if doc.id == docente_atual %}active{% endif %}" href="?docente={{ doc.id }}">
+                  <div>
+                    <div class="fw-semibold small">{{ doc.nome }}</div>
+                    <div class="text-muted" style="font-size: 0.72rem;">{{ doc.eixo }}</div>
+                  </div>
+                  <span class="badge rounded-pill {% if doc.id == 'pedro' %}bg-primary{% else %}bg-secondary bg-opacity-25 text-reset{% endif %}" style="font-size: 0.65rem;">
+                    {{ 'Completo' if doc.id == 'pedro' else 'Essencial' }}
+                  </span>
+                </a>
+              </li>
+            {% endfor %}
+          </ul>
+        </div>
+
+        <!-- Toggle de Tema (Claro / Escuro / Auto) -->
+        <div class="theme-switcher" role="group" aria-label="Alternar Tema">
+          <button type="button" class="theme-btn" id="btnThemeLight" onclick="setAppTheme('light')" title="Tema Claro">
+            <i class="bi bi-sun-fill"></i><span class="d-none d-sm-inline">Claro</span>
+          </button>
+          <button type="button" class="theme-btn" id="btnThemeDark" onclick="setAppTheme('dark')" title="Tema Escuro">
+            <i class="bi bi-moon-stars-fill"></i><span class="d-none d-sm-inline">Escuro</span>
+          </button>
+          <button type="button" class="theme-btn" id="btnThemeSystem" onclick="setAppTheme('system')" title="Tema do Sistema">
+            <i class="bi bi-circle-half"></i>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- CONTEÚDO PRINCIPAL -->
+    <main class="container-fluid py-4 px-3 px-md-4 flex-grow-1">
+
+      <!-- Alertas Flash -->
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for category, msg in messages %}
+            <div class="alert alert-{{ category }} alert-dismissible fade show rounded-4 shadow-sm border-0 mb-3" role="alert">
+              <i class="bi bi-info-circle-fill me-1"></i> {{ msg }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+
+      <!-- BENTO GRID DE MÉTRICAS -->
+      <div class="row g-3 mb-4">
+        <div class="col-6 col-xl-3">
+          <div class="kpi-card">
+            <div>
+              <div class="text-muted fw-semibold" style="font-size: 0.74rem; letter-spacing: 0.04em;">ALUNOS MAPEADOS</div>
+              <div class="fs-3 fw-bold mt-1">{{ total_alunos }}</div>
+              <div class="small text-muted" style="font-size: 0.75rem;">{{ perfil.turmas|length }} turmas vinculadas</div>
+            </div>
+            <div class="kpi-icon" style="background: var(--accent-soft); color: var(--accent-primary-hover);">
+              <i class="bi bi-mortarboard-fill"></i>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-6 col-xl-3">
+          <div class="kpi-card">
+            <div>
+              <div class="text-muted fw-semibold" style="font-size: 0.74rem; letter-spacing: 0.04em;">GRADE SEMANAL</div>
+              <div class="fs-3 fw-bold mt-1">{{ grade_individual|length }} <span class="fs-6 fw-normal text-muted">aulas</span></div>
+              <div class="small text-muted" style="font-size: 0.75rem;">{{ materias|length }} disciplina(s) no RAG</div>
+            </div>
+            <div class="kpi-icon" style="background: var(--emerald-soft); color: #10b981;">
+              <i class="bi bi-calendar2-week-fill"></i>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-6 col-xl-3">
+          <div class="kpi-card">
+            <div>
+              <div class="text-muted fw-semibold" style="font-size: 0.74rem; letter-spacing: 0.04em;">LABORATÓRIO TI</div>
+              <div class="fs-3 fw-bold mt-1">{{ reservas_confirmadas|length }} <span class="fs-6 fw-normal text-muted">ativas</span></div>
+              <div class="small {% if reservas_pendentes|length > 0 %}text-warning fw-bold{% else %}text-muted{% endif %}" style="font-size: 0.75rem;">
+                {{ reservas_pendentes|length }} pedido(s) pendente(s)
+              </div>
+            </div>
+            <div class="kpi-icon" style="background: var(--amber-soft); color: #f59e0b;">
+              <i class="bi bi-pc-display"></i>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-6 col-xl-3">
+          <div class="kpi-card">
+            <div>
+              <div class="text-muted fw-semibold" style="font-size: 0.74rem; letter-spacing: 0.04em;">PROTEÇÃO PRIVADO</div>
+              <div class="fs-6 fw-bold mt-1 text-success"><i class="bi bi-shield-lock-fill"></i> Gate `!iniciar` Ativo</div>
+              <div class="small text-muted" style="font-size: 0.75rem;">Conversas casuais ignoradas</div>
+            </div>
+            <div class="kpi-icon" style="background: var(--rose-soft); color: #f43f5e;">
+              <i class="bi bi-chat-square-lock-fill"></i>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CONTEÚDO DAS ABAS -->
+      <div class="tab-content" id="portalTabsContent">
+
+        <!-- ABA 1: ESTÚDIO DE AULAS IA (SLIDES & PROVAS COM RAG ISOLADO POR DISCIPLINA) -->
+        <div class="tab-pane fade {% if not aba_ativa or aba_ativa == 'gerador' %}show active{% endif %}" id="tabGerador">
+          <div class="row g-4">
+            <div class="col-lg-7">
+              <div class="surface-card">
+                <div class="surface-header">
+                  <span><i class="bi bi-stars text-primary me-2"></i>Gerador Inteligente de Aula (Slides `.pptx` + Questionário BNCC)</span>
+                  <span class="badge rounded-pill" style="background: var(--accent-soft); color: var(--accent-primary-hover);"><i class="bi bi-shield-check me-1"></i>RAG Blindado Anti-Alucinação</span>
+                </div>
+                <div class="p-4">
+                  <form action="/gerar_aula/{{ docente_atual }}" method="POST">
+                    <div class="row g-3 mb-3">
+                      <div class="col-md-7">
+                        <label class="form-label small fw-bold">Componente Curricular (Disciplina):</label>
+                        <select name="materia" id="selectMateriaGerador" class="form-select" onchange="atualizarEscopoRAG()" required>
+                          {% for m in materias %}
+                            <option value="{{ m.id }}" data-slug="{{ m.slug }}" data-docs="{{ m.arquivos|length }}">{{ m.nome }}</option>
+                          {% endfor %}
+                        </select>
+                      </div>
+                      <div class="col-md-5">
+                        <label class="form-label small fw-bold">Turma Alvo:</label>
+                        <select name="turma" class="form-select">
+                          {% for t in perfil.turmas %}
+                            <option value="{{ t.id }}">Turma {{ t.id }}</option>
+                          {% endfor %}
+                        </select>
+                      </div>
+                    </div>
+
+                    <!-- Inspetor de Escopo e Fontes RAG em Tempo Real -->
+                    <div class="mb-3 p-3 rounded-3" style="background: var(--bg-elevated); border: 1px solid var(--border-subtle);">
+                      <div class="d-flex align-items-center justify-content-between mb-2">
+                        <span class="small fw-bold text-secondary"><i class="bi bi-folder-check text-primary me-1"></i>Escopo RAG Ativo da Disciplina</span>
+                        <span id="escopoDocsBadge" class="badge bg-primary bg-opacity-25 text-primary small">0 documentos</span>
+                      </div>
+                      <div class="font-mono small text-muted mb-2" id="escopoPastaText">
+                        docentes/{{ docente_atual }}/rag_conteudos/...
+                      </div>
+                      <div id="escopoListaArquivos" class="d-flex flex-wrap gap-1">
+                        <!-- Preenchido dinamicamente via JS com as fontes isoladas da disciplina -->
+                      </div>
+                      <div class="small text-muted mt-2 pt-2 border-top d-flex align-items-center gap-1" style="border-color: var(--border-subtle) !important;">
+                        <i class="bi bi-shield-lock-fill text-success"></i>
+                        <span><strong>Zero Contaminação:</strong> Apenas documentos desta pasta são inseridos no contexto da IA.</span>
+                      </div>
+                    </div>
+
+                    <div class="mb-4">
+                      <label class="form-label small fw-bold">Tema ou Tópico Específico da Aula:</label>
+                      <input type="text" name="topico" class="form-control" placeholder="Ex: LGPD e Proteção de Dados / Flexbox e Grid CSS / Leis de Newton" required>
+                      <div class="form-text small mt-1">
+                        O motor semanticamente pesquisa no guia e ementa indexados para construir slides alinhados à BNCC e gabarito técnico.
+                      </div>
+                    </div>
+
+                    <button type="submit" class="btn-accent w-100 py-2">
+                      <i class="bi bi-magic me-1"></i> Gerar Apresentação (.pptx) + Questionário Escalonado
+                    </button>
+                  </form>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-lg-5">
+              <div class="surface-card h-100">
+                <div class="surface-header">
+                  <span><i class="bi bi-cpu text-info me-2"></i>Diretrizes Pedagógicas & RAG</span>
+                </div>
+                <div class="p-4">
+                  <div class="p-3 rounded-3 mb-3 font-mono small" style="background: var(--bg-elevated); border: 1px solid var(--border-subtle);">
+                    <div><strong>DOCENTE:</strong> {{ perfil.nome }}</div>
+                    <div><strong>EIXO:</strong> {{ perfil.eixo_tecnologico }}</div>
+                    <div><strong>DISCIPLINAS:</strong> {{ materias|length }} componente(s)</div>
+                    <div><strong>WHATSAPP ID:</strong> {{ perfil.telefone_whatsapp }}</div>
+                  </div>
+                  <div class="small text-secondary d-flex flex-column gap-2">
+                    <div class="d-flex align-items-start gap-2">
+                      <i class="bi bi-shield-check text-success mt-1"></i>
+                      <span><strong>Isolamento Físico de Pastas:</strong> Cada disciplina possui seu subdiretório em <code>rag_conteudos/</code>. Guias de uma matéria nunca vazam para outra.</span>
+                    </div>
+                    <div class="d-flex align-items-start gap-2">
+                      <i class="bi bi-check-circle-fill text-success mt-1"></i>
+                      <span><strong>Auditoria Textual Imediata:</strong> Na aba <em>Base RAG & Ementas</em>, você pode abrir o modal e auditar o texto bruto extraído de qualquer PDF ou Markdown.</span>
+                    </div>
+                    <div class="d-flex align-items-start gap-2">
+                      <i class="bi bi-check-circle-fill text-success mt-1"></i>
+                      <span><strong>Avaliação em 3 Níveis:</strong> Questão 1 Conceitual (Fácil), Questão 2 Múltipla Escolha (Médio) e Questão 3 Desafio de Laboratório (Difícil).</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ABA 2: LABORATÓRIO & GRADE INDIVIDUAL -->
+        <div class="tab-pane fade {% if aba_ativa == 'lab' %}show active{% endif %}" id="tabLaboratorio">
+          <div class="row g-4">
+            <div class="col-lg-5">
+              <div class="surface-card mb-4">
+                <div class="surface-header">
+                  <span><i class="bi bi-calendar-plus text-primary me-2"></i>Agendar Laboratório (como {{ perfil.nome }})</span>
+                </div>
+                <div class="p-4">
+                  <form action="/lab/{{ docente_atual }}/agendar" method="POST">
+                    <div class="row g-2 mb-3">
+                      <div class="col-5">
+                        <label class="form-label small fw-bold">Dia / Data:</label>
+                        <input type="text" name="dia_ou_data" class="form-control" value="amanha" placeholder="hoje, amanha, segunda" required>
+                      </div>
+                      <div class="col-7">
+                        <label class="form-label small fw-bold">Horários (1º ao 9º):</label>
+                        <input type="text" name="tempos" class="form-control" placeholder="Ex: 3 4 ou 6 7" required>
+                      </div>
+                    </div>
+                    <div class="mb-3">
+                      <label class="form-label small fw-bold">Turma / Atividade Prática:</label>
+                      <input type="text" name="motivo" class="form-control" placeholder="Ex: 202 Prática IA">
+                    </div>
+                    <button type="submit" class="btn-accent w-100">
+                      <i class="bi bi-check2-circle me-1"></i> Confirmar Reserva no Laboratório
+                    </button>
+                  </form>
+                </div>
+              </div>
+
+              <!-- Grade Individual do Professor -->
+              <div class="surface-card">
+                <div class="surface-header">
+                  <span><i class="bi bi-clock-history text-warning me-2"></i>Grade Semanal — {{ perfil.nome }}</span>
+                  <span class="badge rounded-pill bg-secondary bg-opacity-25 text-reset">{{ grade_individual|length }} aulas</span>
+                </div>
+                <div class="table-responsive" style="max-height: 360px;">
+                  <table class="table table-hover align-middle mb-0 small">
+                    <thead>
+                      <tr class="text-muted">
+                        <th class="ps-3">Dia</th>
+                        <th>Tempo</th>
+                        <th>Turma</th>
+                        <th class="pe-3">Disciplina</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {% for g in grade_individual %}
+                        <tr>
+                          <td class="ps-3 fw-semibold">{{ g.dia_nome }}</td>
+                          <td><span class="badge bg-secondary bg-opacity-25 text-reset font-mono">{{ g.tempo_aula }}º Tempo</span></td>
+                          <td><span class="badge bg-primary bg-opacity-25 text-primary">Turma {{ g.turma }}</span></td>
+                          <td class="pe-3">{{ g.disciplina }}</td>
+                        </tr>
+                      {% else %}
+                        <tr><td colspan="4" class="text-center py-4 text-muted">Sem horários registrados para este docente.</td></tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-lg-7">
+              <!-- Solicitações Pendentes de Alunos -->
+              {% if reservas_pendentes|length > 0 %}
+              <div class="surface-card mb-4" style="border-color: rgba(245, 158, 11, 0.45);">
+                <div class="surface-header" style="background: var(--amber-soft);">
+                  <span class="text-warning"><i class="bi bi-hourglass-split me-2"></i>Solicitações Pendentes de Grupos de Alunos ({{ reservas_pendentes|length }})</span>
+                </div>
+                <div class="table-responsive">
+                  <table class="table align-middle mb-0 small">
+                    <thead>
+                      <tr class="text-muted">
+                        <th class="ps-3">ID</th>
+                        <th>Data</th>
+                        <th>Tempo</th>
+                        <th>Solicitante</th>
+                        <th class="text-end pe-3">Decisão Admin</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {% for p in reservas_pendentes %}
+                        <tr>
+                          <td class="ps-3 font-mono">#{{ p.id }}</td>
+                          <td>{{ p.data_reserva }}</td>
+                          <td><span class="badge bg-warning text-dark">{{ p.tempo_aula }}º ({{ p.horario_inicio }}-{{ p.horario_fim }})</span></td>
+                          <td class="fw-semibold">{{ p.autor_nome }}</td>
+                          <td class="text-end pe-3">
+                            <form action="/lab/{{ docente_atual }}/decidir_pendente" method="POST" class="d-inline">
+                              <input type="hidden" name="pedido_id" value="{{ p.id }}">
+                              <input type="hidden" name="acao" value="aprovar">
+                              <button class="btn btn-sm btn-success py-0 px-2 fw-semibold">Aprovar</button>
+                            </form>
+                            <form action="/lab/{{ docente_atual }}/decidir_pendente" method="POST" class="d-inline">
+                              <input type="hidden" name="pedido_id" value="{{ p.id }}">
+                              <input type="hidden" name="acao" value="recusar">
+                              <button class="btn btn-sm btn-outline-danger py-0 px-2">Recusar</button>
+                            </form>
+                          </td>
+                        </tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+              {% endif %}
+
+              <!-- Reservas Confirmadas -->
+              <div class="surface-card">
+                <div class="surface-header">
+                  <span><i class="bi bi-pc-display text-success me-2"></i>Reservas Confirmadas no Laboratório</span>
+                  <span class="badge rounded-pill bg-success bg-opacity-25 text-success">{{ reservas_confirmadas|length }} confirmadas</span>
+                </div>
+                <div class="table-responsive" style="max-height: 460px;">
+                  <table class="table table-hover align-middle mb-0 small">
+                    <thead>
+                      <tr class="text-muted">
+                        <th class="ps-3">ID</th>
+                        <th>Data</th>
+                        <th>Horário</th>
+                        <th>Docente / Aluno</th>
+                        <th>Motivo</th>
+                        <th class="text-end pe-3">Ação</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {% for r in reservas_confirmadas %}
+                        <tr>
+                          <td class="ps-3 font-mono text-muted">#{{ r.id }}</td>
+                          <td class="fw-semibold">{{ r.data_reserva }}</td>
+                          <td><span class="badge bg-primary bg-opacity-10 text-primary font-mono">{{ r.tempo_aula }}º ({{ r.horario_inicio }}-{{ r.horario_fim }})</span></td>
+                          <td class="fw-semibold">{{ r.autor_nome }}</td>
+                          <td class="text-muted">{{ r.motivo or 'Aula Prática' }}</td>
+                          <td class="text-end pe-3">
+                            <form action="/lab/{{ docente_atual }}/cancelar" method="POST" class="d-inline">
+                              <input type="hidden" name="alvo" value="#{{ r.id }}">
+                              <button type="submit" class="btn btn-sm btn-outline-danger py-0 px-2">
+                                <i class="bi bi-x-lg"></i> Liberar
+                              </button>
+                            </form>
+                          </td>
+                        </tr>
+                      {% else %}
+                        <tr><td colspan="6" class="text-center py-4 text-muted">Nenhuma reserva futura ativa.</td></tr>
+                      {% endfor %}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ABA 3: CONTROLE DOS BOTS, AUTENTICAÇÃO PRIVADA & CONSOLE -->
+        <div class="tab-pane fade {% if aba_ativa == 'bot' %}show active{% endif %}" id="tabControleBot">
+          <div class="row g-4">
+            <div class="col-lg-6">
+              <!-- Interruptor Geral: Pausa / Desligamento Momentâneo -->
+              <div class="surface-card mb-4" style="border-left: 4px solid {% if status_servicos.bot_pausado %}#f59e0b{% else %}#10b981{% endif %};">
+                <div class="surface-header">
+                  <span><i class="bi bi-power me-2 text-primary"></i>Interruptor Geral do Bot</span>
+                  {% if status_servicos.bot_pausado %}
+                    <span class="badge bg-warning text-dark"><i class="bi bi-pause-fill me-1"></i>Pausado Temporariamente</span>
+                  {% else %}
+                    <span class="badge bg-success bg-opacity-25 text-success"><i class="bi bi-check-circle-fill me-1"></i>Ativo & Operacional</span>
+                  {% endif %}
+                </div>
+                <div class="p-3">
+                  <div class="small text-secondary mb-3">
+                    Permite desligar momentaneamente todas as respostas do bot no WhatsApp (grupos e privado) até você religar. Ideal para reuniões, folgas ou quando desejar responder manualmente.
+                  </div>
+                  <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 p-2 rounded-3" style="background: var(--bg-elevated); border: 1px solid var(--border-subtle);">
+                    <div>
+                      {% if status_servicos.bot_pausado %}
+                        <div class="small text-warning fw-semibold"><i class="bi bi-pause-circle-fill me-1"></i>Bot desligado desde {{ status_servicos.pausa_info.pausado_em or 'recente' }}</div>
+                        <div class="font-mono text-muted" style="font-size: 0.72rem;">No WhatsApp do admin: envie <code>!ligar</code> para reativar</div>
+                      {% else %}
+                        <div class="small text-success fw-semibold"><i class="bi bi-broadcast me-1"></i>Bot respondendo ativamente aos comandos</div>
+                        <div class="font-mono text-muted" style="font-size: 0.72rem;">No WhatsApp do admin: envie <code>!pausar</code> para desligar</div>
+                      {% endif %}
+                    </div>
+                    {% if status_servicos.bot_pausado %}
+                      <button type="button" class="btn btn-warning text-dark fw-bold btn-sm px-3 rounded-pill" onclick="togglePausaBot()">
+                        <i class="bi bi-play-circle-fill me-1"></i> Religar Bot Agora
+                      </button>
+                    {% else %}
+                      <button type="button" class="btn btn-outline-warning btn-sm px-3 rounded-pill" onclick="togglePausaBot()">
+                        <i class="bi bi-pause-circle me-1"></i> Desligar Momentaneamente
+                      </button>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+
+              <!-- Explicação da Regra de Privado & Inatividade Silenciosa -->
+              <div class="surface-card mb-4">
+                <div class="surface-header">
+                  <span><i class="bi bi-shield-check text-success me-2"></i>Privado & Inatividade Silenciosa</span>
+                  <span class="badge bg-success bg-opacity-25 text-success">Ativo</span>
+                </div>
+                <div class="p-3 small text-secondary">
+                  Para que mensagens pessoais no seu WhatsApp <strong>nunca disparem o bot sem querer</strong>:
+                  <ul class="mb-2 ps-3 mt-1">
+                    <li>Outros docentes só ativam o bot no privado com comando inicial (<code>!iniciar</code>, <code>!bot</code>, <code>!sou</code>).</li>
+                    <li><strong>Encerramento Silencioso:</strong> Após 15 minutos sem novas mensagens, a sessão expira silenciosamente sem enviar avisos no chat, mantendo a conversa privada como um bate-papo humano normal.</li>
+                  </ul>
+                  <div class="d-flex flex-wrap gap-2 font-mono">
+                    <span class="badge bg-secondary bg-opacity-25 text-reset">!iniciar</span>
+                    <span class="badge bg-secondary bg-opacity-25 text-reset">!bot</span>
+                    <span class="badge bg-secondary bg-opacity-25 text-reset">!sair (encerra na hora)</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Console Interativo de Comandos -->
+              <div class="surface-card">
+                <div class="surface-header">
+                  <span><i class="bi bi-terminal text-primary me-2"></i>Console Interativo — Simular como {{ perfil.nome }}</span>
+                </div>
+                <div class="p-4">
+                  <div class="mb-3 d-flex flex-wrap gap-1">
+                    <span class="chip-cmd" onclick="preencherCmd('!iniciar')">!iniciar</span>
+                    <span class="chip-cmd" onclick="preencherCmd('minha grade')">minha grade</span>
+                    <span class="chip-cmd" onclick="preencherCmd('minha grade hoje')">minha grade hoje</span>
+                    <span class="chip-cmd" onclick="preencherCmd('lab')">lab</span>
+                    <span class="chip-cmd" onclick="preencherCmd('!ementa')">!ementa</span>
+                    <span class="chip-cmd" onclick="preencherCmd('!rag ')">!rag &lt;tema&gt;</span>
+                    <span class="chip-cmd" onclick="preencherCmd('!comandos')">!comandos</span>
+                  </div>
+
+                  <div class="input-group mb-2">
+                    <input type="text" id="inputCmdBot" class="form-control font-mono" placeholder="Ex: minha grade, !rag lgpd, lab amanha">
+                    <button class="btn-accent px-4" type="button" onclick="executarCmdBot()">
+                      <i class="bi bi-play-fill"></i> Executar
+                    </button>
+                  </div>
+
+                  <div class="form-check mb-3">
+                    <input class="form-check-input" type="checkbox" id="chkEnviarZapReal">
+                    <label class="form-check-label small text-muted" for="chkEnviarZapReal">
+                      Disparar resposta também no WhatsApp real ({{ perfil.telefone_whatsapp }})
+                    </label>
+                  </div>
+
+                  <pre id="saidaCmdBot" class="terminal-box mb-0" style="min-height: 210px; max-height: 340px;">Selecione um atalho acima ou digite um comando para testar o retorno imediato do bot...</pre>
+                </div>
+              </div>
+            </div>
+
+            <div class="col-lg-6">
+              <div class="surface-card h-100">
+                <div class="surface-header">
+                  <span><i class="bi bi-activity text-warning me-2"></i>Telemetria & Logs ao Vivo (`webhook_live.log`)</span>
+                  <a href="?docente={{ docente_atual }}&aba=bot" class="btn btn-sm btn-outline-secondary py-0 px-2">
+                    <i class="bi bi-arrow-clockwise"></i> Atualizar
+                  </a>
+                </div>
+                <div class="p-3">
+                  <div class="mb-2 small text-muted">
+                    <strong>Grupos de Alunos Autorizados (`!lab`):</strong>
+                    {% for g in status_servicos.grupos_alunos_lab %}
+                      <span class="badge bg-secondary bg-opacity-25 text-reset me-1">{{ g }}</span>
+                    {% endfor %}
+                  </div>
+                  <pre class="terminal-box mb-0" style="height: 430px;">{% for l in logs_recentes %}{{ l }}
+{% else %}Sem registros recentes no log.{% endfor %}</pre>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ABA 4: BASE RAG & EMENTAS (ISOLAMENTO ESTRITO POR DISCIPLINA) -->
+        <div class="tab-pane fade {% if aba_ativa == 'materias' %}show active{% endif %}" id="tabMaterias">
+          <div class="d-flex align-items-center justify-content-between mb-3 p-3 rounded-3" style="background: var(--bg-surface); border: 1px solid var(--border-subtle);">
+            <div>
+              <div class="fw-bold fs-6"><i class="bi bi-shield-lock-fill text-success me-2"></i>Arquitetura Anti-Alucinação & Segregação de Conteúdos</div>
+              <div class="small text-secondary">
+                Cada disciplina possui seu repositório isolado em <code>docentes/{{ docente_atual }}/rag_conteudos/&lt;disciplina&gt;/</code>. Não há compartilhamento de contexto entre matérias distintas.
+              </div>
+            </div>
+            <span class="badge rounded-pill bg-success bg-opacity-25 text-success px-3 py-2">
+              <i class="bi bi-check-circle me-1"></i>Isolamento Ativo
+            </span>
+          </div>
+
+          <div class="row g-4">
+            {% for m in materias %}
+              <div class="col-lg-6">
+                <div class="surface-card h-100 d-flex flex-column">
+                  <div class="surface-header">
+                    <div>
+                      <span class="fw-bold"><i class="bi bi-book-half text-primary me-2"></i>{{ m.nome }}</span>
+                      <div class="font-mono text-muted" style="font-size: 0.72rem;">ID: {{ m.id }} &bull; Slug: {{ m.slug }}</div>
+                    </div>
+                    <div>
+                      {% for tid in m.turmas %}
+                        <span class="badge bg-primary bg-opacity-25 text-primary">Turma {{ tid }}</span>
+                      {% endfor %}
+                    </div>
+                  </div>
+                  <div class="p-4 flex-grow-1 d-flex flex-column">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                      <div class="small fw-bold text-muted text-uppercase">Documentos Indexados ({{ m.arquivos|length }}):</div>
+                      <span class="font-mono text-muted" style="font-size: 0.7rem;">pasta: rag_conteudos/{{ m.slug }}/</span>
+                    </div>
+
+                    {% if m.arquivos %}
+                      <div class="d-flex flex-column gap-2 mb-3">
+                        {% for arq in m.arquivos %}
+                          <div class="p-2 rounded-3 d-flex align-items-center justify-content-between" style="background: var(--bg-elevated); border: 1px solid var(--border-subtle);">
+                            <div class="d-flex align-items-center gap-2 overflow-hidden me-2">
+                              {% if arq.nome.endswith('.pdf') %}
+                                <i class="bi bi-file-earmark-pdf-fill text-danger fs-5"></i>
+                              {% elif arq.nome.endswith('.md') %}
+                                <i class="bi bi-file-earmark-code-fill text-primary fs-5"></i>
+                              {% else %}
+                                <i class="bi bi-file-earmark-text-fill text-info fs-5"></i>
+                              {% endif %}
+                              <div class="text-truncate">
+                                <div class="font-mono small fw-semibold text-truncate">{{ arq.nome }}</div>
+                                <div class="text-muted" style="font-size: 0.72rem;">
+                                  {{ arq.tamanho_kb }} KB &bull; {{ arq.total_chars }} caracteres extraídos
+                                </div>
+                              </div>
+                            </div>
+                            <div class="d-flex align-items-center gap-1 text-nowrap">
+                              <button type="button" class="btn btn-sm btn-outline-primary py-1 px-2" style="font-size: 0.75rem;" onclick="abrirModalPreview('{{ docente_atual }}', '{{ m.id }}', '{{ arq.nome }}')">
+                                <i class="bi bi-eye me-1"></i>Auditar
+                              </button>
+                              <form action="/material/{{ docente_atual }}/{{ m.id }}/remover/{{ arq.nome }}" method="POST" onsubmit="return confirm('Remover este arquivo da base de conhecimento da matéria {{ m.nome }}?');" class="d-inline">
+                                <button type="submit" class="btn btn-sm btn-outline-danger py-1 px-2" style="font-size: 0.75rem;" title="Remover arquivo">
+                                  <i class="bi bi-trash"></i>
+                                </button>
+                              </form>
+                            </div>
+                          </div>
+                        {% endfor %}
+                      </div>
+                    {% else %}
+                      <div class="p-3 rounded-3 text-center text-muted small fst-italic mb-3" style="background: var(--bg-elevated); border: 1px dashed var(--border-subtle);">
+                        <i class="bi bi-inbox d-block fs-3 mb-1 opacity-50"></i>
+                        Nenhum guia ou ementa anexado ainda para este componente.
+                      </div>
+                    {% endif %}
+
+                    <div class="mt-auto pt-3 border-top" style="border-color: var(--border-subtle) !important;">
+                      <form action="/upload_material/{{ docente_atual }}/{{ m.id }}" method="POST" enctype="multipart/form-data" class="d-flex gap-2">
+                        <input type="file" name="arquivo" class="form-control form-control-sm" accept=".pdf,.txt,.md,.csv" required>
+                        <button type="submit" class="btn-accent btn-sm text-nowrap px-3">
+                          <i class="bi bi-cloud-arrow-up-fill me-1"></i> Indexar
+                        </button>
+                      </form>
+                      <div class="form-text small mt-1" style="font-size: 0.72rem;">
+                        Formatos suportados: PDF, MD, TXT e CSV. PDFs são automaticamente convertidos e indexados no RAG do WhatsApp (`!rag`).
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        </div>
+
+        <!-- ABA 5: GESTÃO DE ALUNOS & FREQUÊNCIA -->
+        <div class="tab-pane fade {% if aba_ativa == 'alunos' %}show active{% endif %}" id="tabAlunos">
+          <div class="surface-card">
+            <div class="surface-header flex-wrap">
+              <div class="d-flex align-items-center gap-3">
+                <span><i class="bi bi-people-fill text-success me-2"></i>Alunos e Controle de Faltas</span>
+                <form method="GET" class="d-inline-block">
+                  <input type="hidden" name="docente" value="{{ docente_atual }}">
+                  <input type="hidden" name="aba" value="alunos">
+                  <select name="turma_filtro" class="form-select form-select-sm w-auto" onchange="this.form.submit()">
+                    <option value="">Todas as Turmas ({{ total_alunos }})</option>
+                    {% for t in turmas_cadastradas %}
+                      <option value="{{ t }}" {% if turma_filtro == t %}selected{% endif %}>Turma {{ t }}</option>
+                    {% endfor %}
+                  </select>
+                </form>
+              </div>
+              <button class="btn-accent btn-sm" data-bs-toggle="modal" data-bs-target="#modalNovoAluno">
+                <i class="bi bi-person-plus-fill me-1"></i> Cadastrar Aluno
+              </button>
+            </div>
+            <div class="table-responsive">
+              <table class="table table-hover align-middle mb-0 small">
+                <thead>
+                  <tr class="text-muted">
+                    <th class="ps-4">Matrícula</th>
+                    <th>Estudante</th>
+                    <th>Turma</th>
+                    <th class="text-center">Faltas Acumuladas</th>
+                    <th class="text-end pe-4">Ações</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for al in alunos %}
+                    <tr>
+                      <td class="ps-4 font-mono text-muted">{{ al.matricula or al.id }}</td>
+                      <td class="fw-semibold">{{ al.nome }}</td>
+                      <td><span class="badge bg-primary bg-opacity-25 text-primary">Turma {{ al.turma }}</span></td>
+                      <td class="text-center">
+                        <form action="/alunos/{{ docente_atual }}/falta/{{ al.id }}/menos" method="POST" class="d-inline">
+                          <input type="hidden" name="turma" value="{{ turma_filtro }}">
+                          <button class="btn btn-sm btn-outline-secondary py-0 px-2">-</button>
+                        </form>
+                        <span class="fw-bold mx-2 font-mono {% if al.faltas >= 15 %}text-danger{% elif al.faltas >= 12 %}text-warning{% endif %}">
+                          {{ al.faltas }}
+                        </span>
+                        <form action="/alunos/{{ docente_atual }}/falta/{{ al.id }}/mais" method="POST" class="d-inline">
+                          <input type="hidden" name="turma" value="{{ turma_filtro }}">
+                          <button class="btn btn-sm btn-outline-danger py-0 px-2">+</button>
+                        </form>
+                      </td>
+                      <td class="text-end pe-4">
+                        <form action="/alunos/{{ docente_atual }}/remover/{{ al.id }}" method="POST" class="d-inline" onsubmit="return confirm('Remover este aluno?');">
+                          <input type="hidden" name="turma" value="{{ turma_filtro }}">
+                          <button type="submit" class="btn btn-sm btn-outline-danger py-0"><i class="bi bi-trash"></i></button>
+                        </form>
+                      </td>
+                    </tr>
+                  {% else %}
+                    <tr><td colspan="5" class="text-center py-4 text-muted">Nenhum estudante encontrado.</td></tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ABA 6: ATIVIDADES & DISPARO WHATSAPP -->
+        <div class="tab-pane fade {% if aba_ativa == 'atividades' %}show active{% endif %}" id="tabAtividades">
+          <div class="surface-card">
+            <div class="surface-header d-flex justify-content-between align-items-center">
+              <div>
+                <span><i class="bi bi-whatsapp text-success me-2"></i>Atividades Cadastradas & Vistos</span>
+                <span class="badge bg-secondary bg-opacity-25 text-reset">{{ atividades|length }} registradas</span>
+              </div>
+              <div class="d-flex gap-2">
+                <button class="btn btn-sm btn-outline-primary fw-semibold rounded-3" data-bs-toggle="modal" data-bs-target="#modalNovaAtividade">
+                  <i class="bi bi-plus-circle me-1"></i> Nova Atividade
+                </button>
+                <button class="btn btn-sm btn-outline-success fw-semibold rounded-3" data-bs-toggle="modal" data-bs-target="#modalLancarVistos">
+                  <i class="bi bi-check2-all me-1"></i> Lançar Vistos
+                </button>
+              </div>
+            </div>
+            <div class="table-responsive">
+              <table class="table table-hover align-middle mb-0 small">
+                <thead>
+                  <tr class="text-muted">
+                    <th class="ps-4">ID</th>
+                    <th>Turma</th>
+                    <th>Componente</th>
+                    <th>Título / Tema</th>
+                    <th>Data</th>
+                    <th>Vistos</th>
+                    <th class="text-end pe-4">WhatsApp</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for atv in atividades %}
+                    <tr>
+                      <td class="ps-4 font-mono">#{{ atv.id }}</td>
+                      <td><span class="badge bg-primary bg-opacity-25 text-primary">Turma {{ atv.turma }}</span></td>
+                      <td>{{ atv.componente }}</td>
+                      <td class="fw-semibold">{{ atv.titulo }}</td>
+                      <td class="text-muted">{{ atv.data_passada }}</td>
+                      <td><span class="badge bg-success bg-opacity-25 text-success">{{ atv.total_entregas }} vistos</span></td>
+                      <td class="text-end pe-4">
+                        <button class="btn btn-sm btn-outline-primary fw-semibold me-1" onclick="abrirModalMover('{{ atv.id }}', '{{ atv.turma }}', '{{ atv.titulo|replace('\'', '\\\'') }}')">
+                          <i class="bi bi-arrow-left-right me-1"></i> Mover
+                        </button>
+                        <button class="btn btn-sm btn-outline-success fw-semibold" onclick="abrirModalZap('{{ atv.turma }}', '{{ atv.titulo }}')">
+                          <i class="bi bi-send-fill me-1"></i> Disparar Card
+                        </button>
+                      </td>
+                    </tr>
+                  {% else %}
+                    <tr><td colspan="7" class="text-center py-4 text-muted">Nenhuma atividade cadastrada.</td></tr>
+                  {% endfor %}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- ABA 7: ARQUIVOS GERADOS -->
+        <div class="tab-pane fade {% if aba_ativa == 'arquivos' %}show active{% endif %}" id="tabArquivos">
+          <div class="row g-4">
+            <div class="col-md-6">
+              <div class="surface-card">
+                <div class="surface-header">
+                  <span><i class="bi bi-file-earmark-slides text-danger me-2"></i>Apresentações em Slides (.pptx)</span>
+                </div>
+                <ul class="list-group list-group-flush small">
+                  {% for s in slides_gerados %}
+                    <li class="list-group-item bg-transparent d-flex justify-content-between align-items-center py-2 px-3" style="border-color: var(--border-subtle);">
+                      <span class="text-truncate me-2 font-mono">{{ s }}</span>
+                      <a href="/download/{{ docente_atual }}/slides/{{ s }}" class="btn btn-sm btn-outline-primary py-0">
+                        <i class="bi bi-download"></i> Baixar
+                      </a>
+                    </li>
+                  {% else %}
+                    <li class="list-group-item bg-transparent text-muted py-3 text-center">Nenhum slide gerado ainda.</li>
+                  {% endfor %}
+                </ul>
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <div class="surface-card">
+                <div class="surface-header">
+                  <span><i class="bi bi-file-earmark-text text-primary me-2"></i>Questionários com Gabarito (.md)</span>
+                </div>
+                <ul class="list-group list-group-flush small">
+                  {% for q in quizzes_gerados %}
+                    <li class="list-group-item bg-transparent d-flex justify-content-between align-items-center py-2 px-3" style="border-color: var(--border-subtle);">
+                      <span class="text-truncate me-2 font-mono">{{ q }}</span>
+                      <a href="/download/{{ docente_atual }}/questionarios/{{ q }}" class="btn btn-sm btn-outline-secondary py-0">
+                        <i class="bi bi-download"></i> Baixar
+                      </a>
+                    </li>
+                  {% else %}
+                    <li class="list-group-item bg-transparent text-muted py-3 text-center">Nenhum questionário gerado ainda.</li>
+                  {% endfor %}
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- Modal Novo Aluno -->
+<div class="modal fade" id="modalNovoAluno" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content rounded-4 border-0 shadow-lg">
+      <form action="/alunos/{{ docente_atual }}/adicionar" method="POST">
+        <div class="modal-header border-bottom-0">
+          <h5 class="modal-title fw-bold"><i class="bi bi-person-plus text-success me-2"></i>Cadastrar Aluno</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label small fw-bold">Nome Completo:</label>
+            <input type="text" name="nome" class="form-control" required>
+          </div>
+          <div class="row mb-3">
+            <div class="col-6">
+              <label class="form-label small fw-bold">Turma:</label>
+              <input type="text" name="turma" class="form-control" placeholder="Ex: 201" required>
+            </div>
+            <div class="col-6">
+              <label class="form-label small fw-bold">Nº / Matrícula:</label>
+              <input type="text" name="matricula" class="form-control">
+            </div>
+          </div>
+          <div class="mb-2">
+            <label class="form-label small fw-bold">WhatsApp (opcional):</label>
+            <input type="text" name="whatsapp" class="form-control" placeholder="5500000000000">
+          </div>
+        </div>
+        <div class="modal-footer border-top-0">
+          <button type="button" class="btn btn-outline-secondary rounded-3" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn-accent">Salvar Aluno</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Novo Docente -->
+<div class="modal fade" id="modalNovoDocente" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content rounded-4 border-0 shadow-lg">
+      <form action="/novo_docente" method="POST" enctype="multipart/form-data">
+        <div class="modal-header border-bottom-0">
+          <h5 class="modal-title fw-bold"><i class="bi bi-person-badge text-primary me-2"></i>Cadastrar Novo Docente no Ecossistema</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label small fw-bold">Nome do Professor:</label>
+              <input type="text" name="nome" class="form-control" placeholder="Ex: Prof. Exemplo" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small fw-bold">E-mail Institucional:</label>
+              <input type="email" name="email" class="form-control" placeholder="professor@exemplo.edu.br" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small fw-bold">WhatsApp (Reconhecimento Automático):</label>
+              <input type="text" name="whatsapp" class="form-control" placeholder="5500000000000" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small fw-bold">Eixo Tecnológico:</label>
+              <select name="eixo" class="form-select">
+                <option value="Informação e Comunicação">Informação e Comunicação</option>
+                <option value="Gestão e Negócios">Gestão e Negócios</option>
+                <option value="Controle e Processos Industriais">Controle e Processos Industriais</option>
+                <option value="Formação Geral / Base Comum">Formação Geral / Base Comum</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small fw-bold">Disciplina Principal:</label>
+              <input type="text" name="disciplina" class="form-control" placeholder="Ex: Banco de Dados" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small fw-bold">Turmas (separadas por vírgula):</label>
+              <input type="text" name="turmas" class="form-control" placeholder="101, 201, 301" required>
+            </div>
+            <div class="col-12">
+              <label class="form-label small fw-bold">Arquivos RAG da Disciplina (.pdf, .md, .txt):</label>
+              <input type="file" name="arquivos_base" class="form-control" multiple accept=".pdf,.txt,.md,.csv">
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer border-top-0">
+          <button type="button" class="btn btn-outline-secondary rounded-3" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn-accent">Criar Perfil & Integrar ao Bot</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Disparo WhatsApp -->
+<div class="modal fade" id="modalDisparoZap" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content rounded-4 border-0 shadow-lg">
+      <div class="modal-header border-bottom-0">
+        <h5 class="modal-title fw-bold"><i class="bi bi-whatsapp text-success me-2"></i>Card da Atividade</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <textarea id="textoCardZap" class="form-control font-mono small" rows="8" readonly></textarea>
+      </div>
+      <div class="modal-footer border-top-0">
+        <a id="btnLinkDiretoZap" href="#" target="_blank" class="btn btn-success fw-bold rounded-3">
+          <i class="bi bi-box-arrow-up-right me-1"></i> Enviar no WhatsApp
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Nova Atividade -->
+<div class="modal fade" id="modalNovaAtividade" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content rounded-4 border-0 shadow-lg">
+      <form action="/atividades/{{ docente_atual }}/cadastrar" method="POST">
+        <div class="modal-header border-bottom-0">
+          <h5 class="modal-title fw-bold"><i class="bi bi-journal-plus text-primary me-2"></i>Cadastrar Nova Atividade</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label small fw-bold">Turma:</label>
+              <select name="turma" class="form-select" required>
+                {% for t in turmas_cadastradas %}
+                  <option value="{{ t }}">Turma {{ t }}</option>
+                {% else %}
+                  <option value="201">Turma 201</option>
+                  <option value="202">Turma 202</option>
+                  <option value="200">Turma 200</option>
+                {% endfor %}
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label small fw-bold">Data Passada:</label>
+              <input type="text" name="data_passada" class="form-control" placeholder="DD/MM/AAAA">
+            </div>
+            <div class="col-12">
+              <label class="form-label small fw-bold">Componente Curricular / Matéria:</label>
+              <input type="text" name="componente" class="form-control" placeholder="Ex: Informática, Marketing, Redes" required>
+            </div>
+            <div class="col-12">
+              <label class="form-label small fw-bold">Título / Tema da Atividade:</label>
+              <input type="text" name="titulo" class="form-control" placeholder="Ex: Exercício prático no caderno pág. 12" required>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer border-top-0">
+          <button type="button" class="btn btn-outline-secondary rounded-3" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary fw-semibold rounded-3">Salvar Atividade</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Lançar Vistos -->
+<div class="modal fade" id="modalLancarVistos" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content rounded-4 border-0 shadow-lg">
+      <form action="/atividades/{{ docente_atual }}/lancar_visto" method="POST">
+        <div class="modal-header border-bottom-0">
+          <h5 class="modal-title fw-bold"><i class="bi bi-check2-square text-success me-2"></i>Lançar Vistos em Atividade</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label small fw-bold">Selecione a Atividade:</label>
+            <select name="atividade_id" class="form-select" required>
+              {% for atv in atividades %}
+                <option value="{{ atv.id }}">#{{ atv.id }} — {{ atv.titulo }} (Turma {{ atv.turma }})</option>
+              {% else %}
+                <option value="">Nenhuma atividade disponível</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-bold">Turma (opcional se informada na atividade):</label>
+            <input type="text" name="turma" class="form-control" placeholder="Ex: 201">
+          </div>
+          <div class="mb-2">
+            <label class="form-label small fw-bold">Alunos que entregaram (Números ou Nomes):</label>
+            <input type="text" name="alunos_input" class="form-control" placeholder="Ex: 1-15, 18, 20 ou Maria, Joao" required>
+            <div class="form-text small">Pode informar intervalos (ex: <code>1-15</code>) ou números separados por vírgula.</div>
+          </div>
+        </div>
+        <div class="modal-footer border-top-0">
+          <button type="button" class="btn btn-outline-secondary rounded-3" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-success fw-semibold rounded-3">Registrar Vistos</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Mover Atividade entre Turmas -->
+<div class="modal fade" id="modalMoverAtividade" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content rounded-4 border-0 shadow-lg" style="background: var(--bg-surface); color: var(--text-primary);">
+      <form action="/atividades/{{ docente_atual }}/mover_turma" method="POST">
+        <div class="modal-header border-bottom py-3" style="border-color: var(--border-subtle) !important;">
+          <h5 class="modal-title fw-bold"><i class="bi bi-arrow-left-right text-primary me-2"></i>Mover Atividade de Turma</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" name="atividade_id" id="moverAtividadeId">
+          <div class="mb-3">
+            <label class="form-label small fw-bold">Atividade:</label>
+            <div class="p-2 rounded font-mono small" style="background: var(--bg-elevated); border: 1px solid var(--border-subtle);" id="moverAtividadeDescricao"># - ...</div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-bold">Turma Atual:</label>
+            <input type="text" class="form-control" id="moverTurmaAtual" disabled readonly>
+          </div>
+          <div class="mb-3">
+            <label class="form-label small fw-bold">Nova Turma de Destino:</label>
+            <select name="nova_turma" class="form-select" required>
+              <option value="202">Turma 202</option>
+              <option value="201">Turma 201</option>
+              <option value="200">Turma 200</option>
+              <option value="203">Turma 203</option>
+              <option value="101">Turma 101</option>
+              <option value="102">Turma 102</option>
+              <option value="103">Turma 103</option>
+              <option value="300">Turma 300</option>
+              <option value="301">Turma 301</option>
+              <option value="302">Turma 302</option>
+              <option value="303">Turma 303</option>
+            </select>
+            <div class="form-text small">A atividade e todos os seus vistos registrados serão transferidos para a nova turma.</div>
+          </div>
+        </div>
+        <div class="modal-footer border-top-0">
+          <button type="button" class="btn btn-outline-secondary rounded-3" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary fw-semibold rounded-3"><i class="bi bi-check-lg me-1"></i>Confirmar Transferência</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Auditoria / Preview de Texto Extraído (RAG Anti-Alucinação) -->
+<div class="modal fade" id="modalPreviewMaterial" tabindex="-1">
+  <div class="modal-dialog modal-lg modal-dialog-scrollable">
+    <div class="modal-content rounded-4 border-0 shadow-lg" style="background: var(--bg-surface); color: var(--text-primary);">
+      <div class="modal-header border-bottom py-3" style="border-color: var(--border-subtle) !important;">
+        <div class="d-flex align-items-center gap-2 overflow-hidden me-2">
+          <i class="bi bi-file-earmark-check-fill text-primary fs-4"></i>
+          <div>
+            <h6 class="modal-title fw-bold mb-0 text-truncate" id="previewNomeArquivo">Carregando arquivo...</h6>
+            <div class="font-mono text-muted" style="font-size: 0.72rem;" id="previewEscopoDisc">Escopo: RAG Isolado</div>
+          </div>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-4">
+        <!-- Metadados de Auditoria -->
+        <div class="row g-2 mb-3">
+          <div class="col-4">
+            <div class="p-2 rounded-3 text-center" style="background: var(--bg-elevated); border: 1px solid var(--border-subtle);">
+              <div class="text-muted small" style="font-size: 0.7rem;">TAMANHO</div>
+              <div class="fw-bold font-mono" id="previewMetaTamanho">-- KB</div>
+            </div>
+          </div>
+          <div class="col-4">
+            <div class="p-2 rounded-3 text-center" style="background: var(--bg-elevated); border: 1px solid var(--border-subtle);">
+              <div class="text-muted small" style="font-size: 0.7rem;">CARACTERES</div>
+              <div class="fw-bold font-mono text-primary" id="previewMetaChars">--</div>
+            </div>
+          </div>
+          <div class="col-4">
+            <div class="p-2 rounded-3 text-center" style="background: var(--bg-elevated); border: 1px solid var(--border-subtle);">
+              <div class="text-muted small" style="font-size: 0.7rem;">LINHAS</div>
+              <div class="fw-bold font-mono" id="previewMetaLinhas">--</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="d-flex align-items-center justify-content-between mb-2">
+          <label class="form-label small fw-bold mb-0 text-secondary">
+            <i class="bi bi-body-text me-1"></i>Conteúdo Extraído Utilizado nas Respostas da IA:
+          </label>
+          <button type="button" class="btn btn-sm btn-outline-secondary py-0 px-2" style="font-size: 0.72rem;" onclick="copiarTextoPreview()">
+            <i class="bi bi-clipboard me-1"></i>Copiar
+          </button>
+        </div>
+
+        <div id="previewSpinner" class="text-center py-5">
+          <div class="spinner-border text-primary" role="status"></div>
+          <div class="small text-muted mt-2">Extraindo e verificando dados da base...</div>
+        </div>
+
+        <pre id="previewConteudoTexto" class="terminal-box mb-0 d-none" style="height: 380px; font-size: 0.8rem; line-height: 1.5; white-space: pre-wrap; word-break: break-word;"></pre>
+      </div>
+      <div class="modal-footer border-top py-2" style="border-color: var(--border-subtle) !important;">
+        <span class="small text-muted me-auto" style="font-size: 0.75rem;">
+          <i class="bi bi-shield-check text-success me-1"></i>Fonte auditável &bull; Zero interferência entre disciplinas
+        </span>
+        <button type="button" class="btn btn-outline-secondary btn-sm rounded-3" data-bs-dismiss="modal">Fechar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+const DADOS_MATERIAS = {{ materias|tojson }};
+
+function updateThemeButtons(mode) {
+  document.getElementById('btnThemeLight')?.classList.toggle('active', mode === 'light');
+  document.getElementById('btnThemeDark')?.classList.toggle('active', mode === 'dark');
+  document.getElementById('btnThemeSystem')?.classList.toggle('active', mode === 'system');
+}
+
+function setAppTheme(mode) {
+  localStorage.setItem('ecossistema_theme', mode);
+  const resolved = mode === 'system'
+    ? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+    : mode;
+  document.documentElement.setAttribute('data-theme', resolved);
+  document.documentElement.setAttribute('data-bs-theme', resolved);
+  updateThemeButtons(mode);
+}
+
+function atualizarEscopoRAG() {
+  const sel = document.getElementById('selectMateriaGerador');
+  if (!sel) return;
+  const materiaId = sel.value;
+  const mat = DADOS_MATERIAS.find(m => m.id === materiaId);
+  if (!mat) return;
+
+  const badge = document.getElementById('escopoDocsBadge');
+  const pasta = document.getElementById('escopoPastaText');
+  const lista = document.getElementById('escopoListaArquivos');
+
+  if (pasta) pasta.textContent = `docentes/{{ docente_atual }}/rag_conteudos/${mat.slug}/`;
+  if (badge) badge.textContent = `${mat.arquivos.length} documento(s) indexado(s)`;
+
+  if (lista) {
+    lista.innerHTML = '';
+    if (mat.arquivos.length === 0) {
+      lista.innerHTML = '<span class="text-muted small fst-italic">Nenhum arquivo na pasta desta matéria (a IA usará a ementa padrão).</span>';
+    } else {
+      mat.arquivos.forEach(arq => {
+        const span = document.createElement('span');
+        span.className = 'badge bg-secondary bg-opacity-25 text-secondary border font-mono small py-1 px-2';
+        span.style.borderColor = 'var(--border-subtle)';
+        span.innerHTML = `<i class="bi bi-file-earmark-text text-primary me-1"></i>${arq.nome} <span class="opacity-75">(${arq.tamanho_kb} KB)</span>`;
+        lista.appendChild(span);
+      });
+    }
+  }
+}
+
+async function abrirModalPreview(docenteId, materiaId, nomeArquivo) {
+  const modalEl = document.getElementById('modalPreviewMaterial');
+  const modal = new bootstrap.Modal(modalEl);
+  modal.show();
+
+  document.getElementById('previewNomeArquivo').textContent = nomeArquivo;
+  document.getElementById('previewEscopoDisc').textContent = `Disciplina: ${materiaId} &bull; doc: ${docenteId}`;
+  document.getElementById('previewMetaTamanho').textContent = '-- KB';
+  document.getElementById('previewMetaChars').textContent = '--';
+  document.getElementById('previewMetaLinhas').textContent = '--';
+  document.getElementById('previewSpinner').classList.remove('d-none');
+  document.getElementById('previewConteudoTexto').classList.add('d-none');
+
+  try {
+    const url = `/material/${docenteId}/${materiaId}/preview/${encodeURIComponent(nomeArquivo)}`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('Não foi possível ler o arquivo.');
+    const data = await res.json();
+
+    document.getElementById('previewMetaTamanho').textContent = data.tamanho_kb + ' KB';
+    document.getElementById('previewMetaChars').textContent = Number(data.total_caracteres).toLocaleString('pt-BR');
+    document.getElementById('previewMetaLinhas').textContent = Number(data.total_linhas).toLocaleString('pt-BR');
+    
+    const pre = document.getElementById('previewConteudoTexto');
+    pre.textContent = data.conteudo || '(Arquivo vazio ou sem texto extraível)';
+    document.getElementById('previewSpinner').classList.add('d-none');
+    pre.classList.remove('d-none');
+  } catch (err) {
+    document.getElementById('previewSpinner').classList.add('d-none');
+    const pre = document.getElementById('previewConteudoTexto');
+    pre.textContent = 'Erro ao carregar o conteúdo: ' + err.message;
+    pre.classList.remove('d-none');
+  }
+}
+
+function copiarTextoPreview() {
+  const txt = document.getElementById('previewConteudoTexto').textContent;
+  if (txt) {
+    navigator.clipboard.writeText(txt).then(() => {
+      alert('Texto extraído copiado para a área de transferência!');
+    });
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const saved = localStorage.getItem('ecossistema_theme') || 'dark';
+  updateThemeButtons(saved);
+
+  // Sincroniza estado visual dos botões da sidebar
+  const navBtns = document.querySelectorAll('#portalTabs .sidebar-link');
+  navBtns.forEach(btn => {
+    btn.addEventListener('shown.bs.tab', () => {
+      navBtns.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    });
+  });
+
+  // Inicializa o escopo da disciplina ativa no Gerador de Aula
+  atualizarEscopoRAG();
+});
+
+async function togglePausaBot() {
+  const btn = event?.currentTarget;
+  if (btn) btn.classList.add('disabled');
+  try {
+    const res = await fetch('/bot/toggle_pausa', {
+      method: 'POST',
+      headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    });
+    const data = await res.json();
+    window.location.reload();
+  } catch (err) {
+    alert('Erro ao alterar estado do bot: ' + err.message);
+    if (btn) btn.classList.remove('disabled');
+  }
+}
+
+function abrirModalMover(id, turma, titulo) {
+  document.getElementById('moverAtividadeId').value = id;
+  document.getElementById('moverTurmaAtual').value = 'Turma ' + turma;
+  document.getElementById('moverAtividadeDescricao').textContent = '#' + id + ' — ' + titulo;
+  new bootstrap.Modal(document.getElementById('modalMoverAtividade')).show();
+}
+
+function abrirModalZap(turma, titulo) {
+  const card = `📢 *NOVA ATIVIDADE — {{ perfil.instituicao.nome }}*\n` +
+               `• *Eixo:* {{ perfil.eixo_tecnologico }}\n` +
+               `• *Docente:* {{ perfil.nome }}\n` +
+               `• *Turma:* ${turma}\n` +
+               `• *Tema:* ${titulo}\n` +
+               `• *Prazo:* Próxima Aula\n\n` +
+               `📝 *Como Entregar:* Envie a foto nítida do seu caderno ou o código com seu número de chamada.`;
+  document.getElementById('textoCardZap').value = card;
+  document.getElementById('btnLinkDiretoZap').href = 'https://api.whatsapp.com/send?text=' + encodeURIComponent(card);
+  new bootstrap.Modal(document.getElementById('modalDisparoZap')).show();
+}
+
+function preencherCmd(cmd) {
+  const inp = document.getElementById('inputCmdBot');
+  inp.value = cmd;
+  inp.focus();
+}
+
+async function executarCmdBot() {
+  const cmd = document.getElementById('inputCmdBot').value.trim();
+  const enviarReal = document.getElementById('chkEnviarZapReal').checked ? '1' : '0';
+  const out = document.getElementById('saidaCmdBot');
+  if (!cmd) return;
+  out.textContent = '⏳ Executando "' + cmd + '"...';
+  const fd = new FormData();
+  fd.append('comando', cmd);
+  fd.append('enviar_real', enviarReal);
+  try {
+    const resp = await fetch('/bot/{{ docente_atual }}/executar_comando', { method: 'POST', body: fd });
+    const data = await resp.json();
+    out.textContent = data.resposta || 'Sem resposta.';
+  } catch (e) {
+    out.textContent = 'Erro ao comunicar com o portal: ' + e;
+  }
+}
+</script>
+</body>
+</html>

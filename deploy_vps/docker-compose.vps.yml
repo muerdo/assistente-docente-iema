@@ -1,0 +1,120 @@
+version: "3.8"
+
+# Arquitetura Otimizada para VPS de 1 GB RAM e 100 GB HDD
+# Orçamento de Memória Física:
+# - bot-docente-core (Python 3.11-slim): mem_limit 256MB (uso típico: ~65-90MB)
+# - bot-observador (Watchdog leve):      mem_limit 64MB  (uso típico: ~18MB)
+# - openwa-baileys (Opcional na VPS):    mem_limit 512MB (modo ENGINE_TYPE=baileys sem Chromium: ~130MB)
+
+services:
+  bot-docente-core:
+    build:
+      context: ..
+      dockerfile: deploy_vps/Dockerfile
+    container_name: bot-docente-core
+    restart: unless-stopped
+    mem_limit: 256m
+    memswap_limit: 1g
+    cpus: 0.70
+    ports:
+      - "5000:5000"
+    environment:
+      - TZ=America/Fortaleza
+      - MODO_VPS_LEVE=1
+      - OPENWA_API_URL=${OPENWA_API_URL:-http://openwa-baileys:2785}
+      - OPENWA_API_KEY=${OPENWA_API_KEY:?defina OPENWA_API_KEY no .env}
+      - OPENWA_SESSION_ID=${OPENWA_SESSION_ID:?defina OPENWA_SESSION_ID no .env}
+      - OMNIROUTE_URL=${OMNIROUTE_URL:-}
+      - HOST_LOCAL_WEBHOOK_URL=${HOST_LOCAL_WEBHOOK_URL:-}
+      - ESCOLA_DB=/app/dados/escola.db
+      - ECOSSISTEMA_DIR=/app
+      - DOCENTE_HOME=/app
+      - PASTA_UPLOADS_ISOLADOS=/app/uploads_isolados
+    volumes:
+      - ../dados:/app/dados
+      - ../docentes:/app/docentes
+      - vps_uploads_isolados:/app/uploads_isolados
+    networks:
+      - docente-vps-net
+
+  bot-observador:
+    build:
+      context: ..
+      dockerfile: deploy_vps/Dockerfile
+    container_name: bot-observador
+    restart: unless-stopped
+    mem_limit: 64m
+    memswap_limit: 256m
+    cpus: 0.15
+    command: ["python3", "-u", "/app/observador_docente.py", "--daemon"]
+    environment:
+      - TZ=America/Fortaleza
+      - MODO_VPS_LEVE=1
+      - ESCOLA_DB=/app/dados/escola.db
+    volumes:
+      - ../dados:/app/dados
+    depends_on:
+      - bot-docente-core
+    networks:
+      - docente-vps-net
+
+  portal-web:
+    build:
+      context: ..
+      dockerfile: deploy_vps/Dockerfile
+    container_name: portal-docente-web
+    restart: unless-stopped
+    mem_limit: 128m
+    memswap_limit: 512m
+    cpus: 0.30
+    command: ["python3", "-u", "/app/web/app.py"]
+    ports:
+      - "8000:8000"
+    environment:
+      - TZ=America/Fortaleza
+      - MODO_VPS_LEVE=1
+      - ESCOLA_DB=/app/dados/escola.db
+      - ECOSSISTEMA_DIR=/app
+      - DOCENTE_HOME=/app
+    volumes:
+      - ../dados:/app/dados
+      - ../docentes:/app/docentes
+      - ../web:/app/web
+      - vps_uploads_isolados:/app/uploads_isolados
+    depends_on:
+      - bot-docente-core
+    networks:
+      - docente-vps-net
+
+  # Gateway WhatsApp em modo Baileys (WebSocket puro sem Chromium -> ~130MB RAM em vez de 1.7GB)
+  openwa-baileys:
+    image: ghcr.io/openwa/openwa:latest
+    container_name: openwa-baileys
+    restart: unless-stopped
+    profiles: ["full-vps"]
+    mem_limit: 512m
+    memswap_limit: 2g
+    cpus: 0.80
+    ports:
+      - "2785:2785"
+    environment:
+      - PORT=2785
+      - ENGINE_TYPE=baileys
+      - AUTO_START_SESSIONS=true
+      - DATABASE_TYPE=sqlite
+      - STORAGE_TYPE=local
+      - WEBHOOK_SSRF_PROTECT=false
+      - STATUS_SEED_ON_READY=false
+      - NODE_OPTIONS=--max-old-space-size=384
+    volumes:
+      - openwa_vps_data:/app/data
+    networks:
+      - docente-vps-net
+
+volumes:
+  openwa_vps_data:
+  vps_uploads_isolados:
+
+networks:
+  docente-vps-net:
+    driver: bridge

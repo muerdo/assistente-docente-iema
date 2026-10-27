@@ -1,0 +1,1 @@
+{"name":"listar_alunos_turma","description":"\n    Lista todos os alunos de uma turma específica (200, 201, 202, 203) com matrículas e faltas atuais.\n    ","parameters":{"properties":{"turma":{"title":"Turma","type":"string"}},"required":["turma"],"title":"listar_alunos_turmaArguments","type":"object"}}

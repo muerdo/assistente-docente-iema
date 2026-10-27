@@ -1,0 +1,8 @@
+{
+  "chave": "exemplo",
+  "nome": "Prof. Exemplo",
+  "nivel_acesso": "completo",
+  "identificadores_whatsapp": ["SEU_NUMERO_COM_DDI", "SEU_LID_OPENWA"],
+  "disciplinas": ["Disciplina Exemplo"],
+  "turmas": ["101"]
+}

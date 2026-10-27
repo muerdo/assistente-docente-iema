@@ -1,0 +1,1 @@
+{"name":"consultar_vistos_atividades","description":"\n    Consulta os vistos e atividades entregues de uma turma específica (ex: '202') ou de um aluno (ex: 'pedro').\n    ","parameters":{"properties":{"turma_ou_aluno":{"title":"Turma Ou Aluno","type":"string"}},"required":["turma_ou_aluno"],"title":"consultar_vistos_atividadesArguments","type":"object"}}

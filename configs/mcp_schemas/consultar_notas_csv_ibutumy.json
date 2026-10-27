@@ -1,0 +1,1 @@
+{"name":"consultar_notas_csv_ibutumy","description":"\n    Lê o dados_notas.csv para consultar a nota e as faltas de um aluno (ou listar todos se não especificado).\n    ","parameters":{"properties":{"nome_aluno":{"default":"","title":"Nome Aluno","type":"string"}},"title":"consultar_notas_csv_ibutumyArguments","type":"object"}}

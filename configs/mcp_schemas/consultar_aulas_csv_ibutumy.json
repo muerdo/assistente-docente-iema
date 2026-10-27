@@ -1,0 +1,1 @@
+{"name":"consultar_aulas_csv_ibutumy","description":"\n    Lê o aulas.csv para listar os horários, turmas, temas e conteúdos cadastrados para o Ibutumy.\n    ","parameters":{"properties":{},"title":"consultar_aulas_csv_ibutumyArguments","type":"object"}}

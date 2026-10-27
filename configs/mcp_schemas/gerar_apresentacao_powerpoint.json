@@ -1,0 +1,1 @@
+{"name":"gerar_apresentacao_powerpoint","description":"","parameters":{"properties":{"slides_json":{"items":{},"title":"Slides Json","type":"array"},"tema":{"title":"Tema","type":"string"},"turma":{"title":"Turma","type":"string"}},"required":["tema","turma","slides_json"],"title":"gerar_apresentacao_powerpointArguments","type":"object"}}

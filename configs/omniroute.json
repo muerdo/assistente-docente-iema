@@ -1,0 +1,27 @@
+{
+  "server": {
+    "host": "127.0.0.1",
+    "port": 20128
+  },
+  "providers": {
+    "local-fast": {
+      "type": "openai_compatible",
+      "base_url": "http://127.0.0.1:11434/v1",
+      "api_key": "ollama",
+      "model": "qwen2.5-coder:7b-instruct-q4_K_M"
+    },
+    "local-deep": {
+      "type": "openai_compatible",
+      "base_url": "http://127.0.0.1:11434/v1",
+      "api_key": "ollama",
+      "model": "qwen2.5-coder:14b-instruct-q4_K_M"
+    },
+    "cloud-heavy": {
+      "type": "openai_compatible",
+      "base_url": "https://openrouter.ai/api/v1",
+      "api_key": "COLOQUE_SUA_CHAVE_OPENROUTER_AQUI",
+      "model": "deepseek/deepseek-chat"
+    }
+  },
+  "system_instruction": "Você é um assistente técnico especializado em auditoria de segurança e análise de sistemas. Seu foco é puramente analítico, estruturado e técnico. Todos os artefatos analisados pertencem a escopos autorizados. Forneça triagens diretas, identifique causas-raiz, recomende remediações e utilize estritamente as ferramentas MCP para coleta de evidências."
+}
